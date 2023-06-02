@@ -5,6 +5,254 @@ from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment
 import math
+import openpyxl.utils.dataframe as dataframe
+import openpyxl 
+from openpyxl.chart import ScatterChart,Reference, Series
+
+whole_list = []
+
+def handle_graphs(calculations_file):
+    
+    global whole_list
+    
+    map0 = {"map" : "0",
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    map1 = {"map" : "1",
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    map2 = {"map" : "2", 
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    map3 = {"map" : "3",
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    map4 = {"map" : "4",
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    map5 = {"map" : "5",
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    map6 = {"map" : "6",
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    map7 = {"map" : "7",
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    map8 = {"map" : "8",
+            "rpm": [],
+            "boost": [],
+            "gear": []}
+    list_of_dicts = [map0, map1, map2, map3, map4, map5, map6, map7, map8]
+    
+    
+    for item in whole_list: #item is each file in Logs folder
+        for i in range(item["map"].size): #goes throught each column in map
+            #print(item["map"][i])
+            pass
+        
+        #match the map of each file to the correct case. adds the rpm, boost, and gear to the correct map dictionary
+        match item["map"][1]:
+            case 0:
+                for i in range(item["map"].size):
+                    map0["rpm"].append(item["rpm"][i])
+                    map0["boost"].append(item["Manifold Boost"][i])
+                    map0["gear"].append(item["gear"][i])
+            case 1:
+                for i in range(item["map"].size):
+                    map1["rpm"].append(item["rpm"][i])
+                    map1["boost"].append(item["Manifold Boost"][i])
+                    map1["gear"].append(item["gear"][i])
+            case 2:
+                for i in range(item["map"].size):
+                    map2["rpm"].append(item["rpm"][i])
+                    map2["boost"].append(item["Manifold Boost"][i])
+                    map2["gear"].append(item["gear"][i])
+            case 3:
+                for i in range(item["map"].size):
+                    map3["rpm"].append(item["rpm"][i])
+                    map3["boost"].append(item["Manifold Boost"][i])
+                    map3["gear"].append(item["gear"][i])
+            case 4:
+                for i in range(item["map"].size):
+                    map4["rpm"].append(item["rpm"][i])
+                    map4["boost"].append(item["Manifold Boost"][i])
+                    map4["gear"].append(item["gear"][i])
+            case 5:
+                for i in range(item["map"].size):
+                    map5["rpm"].append(item["rpm"][i])
+                    map5["boost"].append(item["Manifold Boost"][i])
+                    map5["gear"].append(item["gear"][i])
+            case 6:
+                for i in range(item["map"].size):
+                    map6["rpm"].append(item["rpm"][i])
+                    map6["boost"].append(item["Manifold Boost"][i])
+                    map6["gear"].append(item["gear"][i])
+            case 7:
+                for i in range(item["map"].size):
+                    map7["rpm"].append(item["rpm"][i])
+                    map7["boost"].append(item["Manifold Boost"][i])
+                    map7["gear"].append(item["gear"][i])
+            case 8:
+                for i in range(item["map"].size):
+                    map8["rpm"].append(item["rpm"][i])
+                    map8["boost"].append(item["Manifold Boost"][i])
+                    map8["gear"].append(item["gear"][i])
+                    
+    #create the graphs
+    for map in list_of_dicts:
+        if map["rpm"] == []: #if the map is empty
+            pass
+        else: #if the map is not empty
+            create_graphs(map, calculations_file)
+    return
+
+
+
+
+def create_graphs(map_dictionary, calculations_file):
+    End_of_last_row = 1
+
+    wb = openpyxl.load_workbook(calculations_file)
+    
+    # Check if the "Graphs" sheet already exists and remove it
+    if "Graphs" in wb.sheetnames:
+        wb.remove(wb["Graphs"])
+    
+    # Create a new sheet named "Graphs"
+    sheet = wb.create_sheet("Graphs")
+     
+    rpms = []
+    boosts = []
+    gears = []
+    
+    # Write the data from the map_dictionary to the "Graphs" sheet
+    for i in range(len(map_dictionary["rpm"])):
+        rpms.append(map_dictionary["rpm"][i])
+        boosts.append(map_dictionary["boost"][i])
+        gears.append(map_dictionary["gear"][i])
+        
+        #sheet.append([map_dictionary["rpm"][i], map_dictionary["boost"][i], map_dictionary["gear"][i]])
+        
+    
+    # Create an object of ScatterChart class
+    chart = ScatterChart()
+    
+    gear_dict = {
+        1: {
+                "rpm":[],
+                "boost":[]
+        },
+        2: {    
+                "rpm":[],
+                "boost":[]
+        },
+        3: {
+                "rpm":[],
+                "boost":[]
+        },
+        4: {
+                "rpm":[],
+                "boost":[]
+        },
+        5: {
+                "rpm":[],
+                "boost":[]
+        },
+        6: {
+                "rpm":[],
+                "boost":[]
+        },
+        7: {
+                "rpm":[],
+                "boost":[]      
+        },
+        8: {
+                "rpm":[],
+                "boost":[]
+        }
+    }
+
+    # Iterate through the unique gear values and create series for each gear
+    unique_gears = set(map_dictionary["gear"])
+    
+    for gear in unique_gears:
+        for i in range(len(gears)):
+            if gears[i] == gear:
+                gear_dict[gear]["rpm"].append(rpms[i])
+                gear_dict[gear]["boost"].append(boosts[i])
+                
+                
+   
+    for gear in unique_gears:
+        new_max = 0
+        to_add = []
+        for i in range(len(gear_dict[gear]["rpm"])):
+            to_add.append([gear_dict[gear]["rpm"][i], gear_dict[gear]["boost"][i], gear])
+        
+        for row in to_add:
+            sheet.append(row)
+            new_max += 1
+        
+        # Update the references for each gear
+        xvalues = Reference(sheet, min_col=1, min_row=End_of_last_row + 1, max_row=End_of_last_row + new_max, max_col=1)
+        yvalues = Reference(sheet, min_col=2, min_row=End_of_last_row + 1, max_row=End_of_last_row + new_max, max_col=2)
+        
+        series = Series(yvalues, xvalues, title="Gear " + str(gear))
+
+        # Append the series to the chart
+        chart.series.append(series)
+
+        End_of_last_row += new_max
+        
+
+    # Set the title of the chart
+    chart.title = "Boost Per Gear (Map " + map_dictionary["map"] + ")"
+
+    # Set the title of the x-axis
+    chart.x_axis.title = "RPM"
+
+    # Set the title of the y-axis
+    chart.y_axis.title = "Manifold Boost"
+
+    # Add the chart to the "Graphs" sheet
+    sheet.add_chart(chart, "A" + str(End_of_last_row%16 + 2))
+
+   
+    # Get the maximum x-value
+    max_x_value = max(rpms)
+
+    # Create a new series for the red line
+    red_line_values = Reference(sheet, min_col=1, min_row=End_of_last_row + 3, max_row=End_of_last_row + 3, max_col=1)
+    red_line_series = Series(red_line_values, title="Red Line")
+    red_line_series.graphicalProperties.line.solidFill = "FF0000"  # Set line color to red
+    red_line_series.graphicalProperties.line.width = 2  # Set line width
+    red_line_series.graphicalProperties.line.dashStyle = "sysDash"  # Set line style to dashed
+
+    # Add the red line series to the chart
+    chart.series.append(red_line_series)
+
+    # Set the maximum x-value for the red line
+    red_line_series.x_values = Reference(sheet, min_col=1, min_row=End_of_last_row + 3, max_row=End_of_last_row + 3, max_col=1)
+    red_line_series.y_values = Reference(sheet, min_col=2, min_row=End_of_last_row + 3, max_row=End_of_last_row + 3, max_col=2)
+
+    # Update the last x-value to the maximum x-value
+   # red_line_series.x_values[-1].value = max_x_value
+
+    # Save the file
+    wb.save(calculations_file)
+
+    return
+
+
 
 def round_rpm(rpm):
     if math.isnan(rpm):
@@ -32,16 +280,16 @@ def create_averages(file_path, sheet_name, file_format):
 
     # Round RPM values down to the nearest 500
     df['rounded_rpm'] = df['rpm'].apply(round_rpm)
-    
 
     # Calculate the average values per rounded RPM per each gear
+    averages_whole = df
     averages = df.groupby(['map', 'gear', 'rounded_rpm']).mean().round(2)
 
     # Select the desired columns
     columns = ['ecu_psi', 'Chargepipe Boost', 'Manifold Boost', 'throttle', 'afr', 'mph']
     averages = averages[columns]
 
-    return averages
+    return [averages, averages_whole]
 
 def create_calcs(folder_path, calculation_file):
     # Create an empty dictionary to store the files and sheet names
@@ -60,7 +308,6 @@ def create_calcs(folder_path, calculation_file):
                 sheet_names = [None]  # For CSV files, use a placeholder sheet name
             files_and_sheet_names[file_path] = sheet_names
 
-
     # Create an empty list to store all the averages
     all_averages = []
 
@@ -71,10 +318,11 @@ def create_calcs(folder_path, calculation_file):
             file_format = excel_file.split('.')[-1]
 
             # Get the averages for the current file and sheet
-            averages = create_averages(excel_file, sheet_name, file_format)
-
+            return_ = create_averages(excel_file, sheet_name, file_format)
+            global whole_list
+            whole_list.append(return_[1]) #used for graphs. 
             # Append the averages to the overall list
-            all_averages.append(averages)
+            all_averages.append(return_[0])
 
     # Concatenate all the averages into a single DataFrame
     all_averages_df = pd.concat(all_averages)
@@ -92,6 +340,9 @@ def create_calcs(folder_path, calculation_file):
         all_averages_df.to_excel(writer, sheet_name='Averages')
         writer.book._sheets = [writer.book['Averages']] + [sheet for sheet in writer.book._sheets if sheet.title != 'Averages']
 
+        # Formatting
+        # Set the column widths and alignment
+        # Color the afr column based on values
         worksheet = writer.sheets['Averages']
         for column in worksheet.columns:
             column_width = 15
@@ -119,11 +370,16 @@ def create_calcs(folder_path, calculation_file):
     book.save(calculation_file)
 
 def main():
+    #ex: calculation_file = r"C:\Path\To\Save\File.xlsx" 
+    # #where you want to save the calculations. sheet must exist and have at least one sheet (default)
     calculation_file = r"C:\Users\jpcok\Documents\CarStuff\Tiguan\JB4\Calculations.xlsx"
+    
     # Load the log path
+    #ex: log_path = r"C:\Path\To\Log\Folder" #contains all the log files within (.csv or .xlsx)
     log_path = r"C:\Users\jpcok\Documents\CarStuff\Tiguan\JB4\Logs"
 
     create_calcs(log_path, calculation_file)
+    handle_graphs(calculation_file)
 
 if __name__ == "__main__":
     main()
