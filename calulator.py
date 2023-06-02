@@ -8,6 +8,7 @@ import math
 import openpyxl.utils.dataframe as dataframe
 import openpyxl 
 from openpyxl.chart import ScatterChart,Reference, Series
+from openpyxl.chart.trendline import Trendline
 
 whole_list = []
 
@@ -18,39 +19,48 @@ def handle_graphs(calculations_file):
     map0 = {"map" : "0",
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     map1 = {"map" : "1",
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     map2 = {"map" : "2", 
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     map3 = {"map" : "3",
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     map4 = {"map" : "4",
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     map5 = {"map" : "5",
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     map6 = {"map" : "6",
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     map7 = {"map" : "7",
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     map8 = {"map" : "8",
             "rpm": [],
             "boost": [],
-            "gear": []}
+            "gear": [],
+            "throttle": []}
     list_of_dicts = [map0, map1, map2, map3, map4, map5, map6, map7, map8]
     
     
@@ -66,61 +76,60 @@ def handle_graphs(calculations_file):
                     map0["rpm"].append(item["rpm"][i])
                     map0["boost"].append(item["Manifold Boost"][i])
                     map0["gear"].append(item["gear"][i])
+                    map0["throttle"].append(item["throttle"][i])
             case 1:
                 for i in range(item["map"].size):
                     map1["rpm"].append(item["rpm"][i])
                     map1["boost"].append(item["Manifold Boost"][i])
                     map1["gear"].append(item["gear"][i])
+                    map1["throttle"].append(item["throttle"][i])
             case 2:
                 for i in range(item["map"].size):
                     map2["rpm"].append(item["rpm"][i])
                     map2["boost"].append(item["Manifold Boost"][i])
                     map2["gear"].append(item["gear"][i])
+                    map2["throttle"].append(item["throttle"][i])
             case 3:
                 for i in range(item["map"].size):
                     map3["rpm"].append(item["rpm"][i])
                     map3["boost"].append(item["Manifold Boost"][i])
                     map3["gear"].append(item["gear"][i])
+                    map3["throttle"].append(item["throttle"][i])
             case 4:
                 for i in range(item["map"].size):
                     map4["rpm"].append(item["rpm"][i])
                     map4["boost"].append(item["Manifold Boost"][i])
                     map4["gear"].append(item["gear"][i])
+                    map4["throttle"].append(item["throttle"][i])
             case 5:
                 for i in range(item["map"].size):
                     map5["rpm"].append(item["rpm"][i])
                     map5["boost"].append(item["Manifold Boost"][i])
                     map5["gear"].append(item["gear"][i])
+                    map5["throttle"].append(item["throttle"][i])
             case 6:
                 for i in range(item["map"].size):
                     map6["rpm"].append(item["rpm"][i])
                     map6["boost"].append(item["Manifold Boost"][i])
                     map6["gear"].append(item["gear"][i])
+                    map6["throttle"].append(item["throttle"][i])
             case 7:
                 for i in range(item["map"].size):
                     map7["rpm"].append(item["rpm"][i])
                     map7["boost"].append(item["Manifold Boost"][i])
                     map7["gear"].append(item["gear"][i])
+                    map7["throttle"].append(item["throttle"][i])
             case 8:
                 for i in range(item["map"].size):
                     map8["rpm"].append(item["rpm"][i])
                     map8["boost"].append(item["Manifold Boost"][i])
                     map8["gear"].append(item["gear"][i])
-                    
-    #create the graphs
-    for map in list_of_dicts:
-        if map["rpm"] == []: #if the map is empty
-            pass
-        else: #if the map is not empty
-            create_graphs(map, calculations_file)
-    return
-
-
-
-
-def create_graphs(map_dictionary, calculations_file):
-    End_of_last_row = 1
-
+                    map8["throttle"].append(item["throttle"][i])
+    
+    
+    
+    # we create the sheet here so that the graphs are created on a new sheet
+    #if created in the loop, there are overwrite issues and this is just better. 
     wb = openpyxl.load_workbook(calculations_file)
     
     # Check if the "Graphs" sheet already exists and remove it
@@ -129,16 +138,36 @@ def create_graphs(map_dictionary, calculations_file):
     
     # Create a new sheet named "Graphs"
     sheet = wb.create_sheet("Graphs")
+    
+    counter = 0 #this is used to determine the graph position
+    #create the graphs
+    for map in list_of_dicts:
+        
+        if map["rpm"] == []: #if the map is empty
+            pass
+        else: #if the map is not empty
+            counter +=1 #increment the counter only if creating new graph
+            create_graphs(map, calculations_file, sheet, wb, counter)
+    return
+
+
+
+
+def create_graphs(map_dictionary, calculations_file,sheet, wb, counter):
+    End_of_last_row = 1
+
+   
      
     rpms = []
     boosts = []
     gears = []
-    
+    throttle = []
     # Write the data from the map_dictionary to the "Graphs" sheet
     for i in range(len(map_dictionary["rpm"])):
         rpms.append(map_dictionary["rpm"][i])
         boosts.append(map_dictionary["boost"][i])
         gears.append(map_dictionary["gear"][i])
+        throttle.append(map_dictionary["throttle"][i])
         
         #sheet.append([map_dictionary["rpm"][i], map_dictionary["boost"][i], map_dictionary["gear"][i]])
         
@@ -149,35 +178,43 @@ def create_graphs(map_dictionary, calculations_file):
     gear_dict = {
         1: {
                 "rpm":[],
-                "boost":[]
+                "boost":[],
+                "throttle": []
         },
         2: {    
                 "rpm":[],
-                "boost":[]
+                "boost":[],
+                "throttle": []
         },
         3: {
                 "rpm":[],
-                "boost":[]
+                "boost":[],
+                "throttle": []
         },
         4: {
                 "rpm":[],
-                "boost":[]
+                "boost":[],
+                "throttle": []
         },
         5: {
                 "rpm":[],
-                "boost":[]
+                "boost":[],
+                "throttle": []
         },
         6: {
                 "rpm":[],
-                "boost":[]
+                "boost":[],
+                "throttle": []
         },
         7: {
                 "rpm":[],
-                "boost":[]      
+                "boost":[],
+                "throttle": []      
         },
         8: {
                 "rpm":[],
-                "boost":[]
+                "boost":[],
+                "throttle": []
         }
     }
 
@@ -189,14 +226,17 @@ def create_graphs(map_dictionary, calculations_file):
             if gears[i] == gear:
                 gear_dict[gear]["rpm"].append(rpms[i])
                 gear_dict[gear]["boost"].append(boosts[i])
+                gear_dict[gear]["throttle"].append(throttle[i])
                 
                 
+
    
     for gear in unique_gears:
         new_max = 0
         to_add = []
         for i in range(len(gear_dict[gear]["rpm"])):
-            to_add.append([gear_dict[gear]["rpm"][i], gear_dict[gear]["boost"][i], gear])
+            if gear_dict[gear]["throttle"][i] > 50: #only add points where throttle is greater than 50%
+                to_add.append([gear_dict[gear]["rpm"][i], gear_dict[gear]["boost"][i], gear])
         
         for row in to_add:
             sheet.append(row)
@@ -224,31 +264,12 @@ def create_graphs(map_dictionary, calculations_file):
     chart.y_axis.title = "Manifold Boost"
 
     # Add the chart to the "Graphs" sheet
-    sheet.add_chart(chart, "A" + str(End_of_last_row%16 + 2))
+    sheet.add_chart(chart, "A" + str((counter * 16) - 15))
 
-   
-    # Get the maximum x-value
-    max_x_value = max(rpms)
-
-    # Create a new series for the red line
-    red_line_values = Reference(sheet, min_col=1, min_row=End_of_last_row + 3, max_row=End_of_last_row + 3, max_col=1)
-    red_line_series = Series(red_line_values, title="Red Line")
-    red_line_series.graphicalProperties.line.solidFill = "FF0000"  # Set line color to red
-    red_line_series.graphicalProperties.line.width = 2  # Set line width
-    red_line_series.graphicalProperties.line.dashStyle = "sysDash"  # Set line style to dashed
-
-    # Add the red line series to the chart
-    chart.series.append(red_line_series)
-
-    # Set the maximum x-value for the red line
-    red_line_series.x_values = Reference(sheet, min_col=1, min_row=End_of_last_row + 3, max_row=End_of_last_row + 3, max_col=1)
-    red_line_series.y_values = Reference(sheet, min_col=2, min_row=End_of_last_row + 3, max_row=End_of_last_row + 3, max_col=2)
-
-    # Update the last x-value to the maximum x-value
-   # red_line_series.x_values[-1].value = max_x_value
 
     # Save the file
     wb.save(calculations_file)
+    
 
     return
 
@@ -361,9 +382,17 @@ def create_calcs(folder_path, calculation_file):
     column_location = 8  # 8 to account for the first 3 columns
     for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=column_location, max_col=column_location):
         for cell in row:
+            
+            #fill yellow by default
             fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+            
+            #fill green if between 12.5 and 13
             if cell.value is not None and 12.5 <= cell.value <= 13:
                 fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+                
+            #fill red if less than 9.0 or greater than 15  
+            elif cell.value is not None and (cell.value < 9.0 or cell.value > 15):
+                fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
             cell.fill = fill
 
     # Save the workbook again to apply the conditional formatting
